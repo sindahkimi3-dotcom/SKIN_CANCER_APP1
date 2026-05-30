@@ -4,10 +4,8 @@ import mysql.connector
 from flask import Flask, render_template, request, redirect, session, flash
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
- 
-# ==========================================
-# 1. CONFIGURATION DE L'APPLICATION
-# ==========================================
+
+
 app = Flask(__name__)
 app.secret_key = "secret"
  
@@ -25,9 +23,7 @@ db = mysql.connector.connect(
 cursor = db.cursor(dictionary=True)
  
  
-# ==========================================
-# 2. ROUTE /login
-# ==========================================
+
 @app.route("/", methods=["GET", "POST"])
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -45,9 +41,7 @@ def login():
     return render_template("login.html")
  
  
-# ==========================================
-# 3. ROUTE /dashboard
-# ==========================================
+
 @app.route("/dashboard")
 def dashboard():
     if "user" not in session:
@@ -67,10 +61,8 @@ def dashboard():
                            total_patients=total_patients,
                            monthly_analyses=monthly_analyses)
  
- 
-# ==========================================
-# 4. ROUTE /predict
-# ==========================================
+
+
 @app.route("/predict", methods=["GET", "POST"])
 def predict():
     if "user" not in session:
@@ -114,9 +106,7 @@ def predict():
     return render_template("predict.html")
  
  
-# ==========================================
-# 5. ROUTE /patients
-# ==========================================
+
 @app.route("/patients")
 def patients():
     if "user" not in session:
@@ -126,15 +116,13 @@ def patients():
     return render_template("patients.html", patients=data)
  
  
-# ==========================================
-# 6. ROUTE /analytics  (NOUVELLE)
-# ==========================================
+
 @app.route("/analytics")
 def analytics():
     if "user" not in session:
         return redirect("/")
  
-    # --- Statistiques globales ---
+
     cursor.execute("SELECT COUNT(*) AS total FROM patients")
     total_patients = cursor.fetchone()["total"]
  
@@ -149,7 +137,7 @@ def analytics():
     row = cursor.fetchone()
     avg_confidence = round((row["avg_conf"] or 0) * 100, 1)
  
-    # --- Répartition bénin / malin ---
+  
     cursor.execute("SELECT COUNT(*) AS cnt FROM patients WHERE result = 'Benign'")
     benign = cursor.fetchone()["cnt"]
  
@@ -158,7 +146,7 @@ def analytics():
  
     unknown = total_patients - benign - malignant
  
-    # --- Activité récente (10 derniers) ---
+
     cursor.execute("SELECT * FROM patients ORDER BY created_at DESC LIMIT 10")
     recent_patients = cursor.fetchall()
  
@@ -174,15 +162,13 @@ def analytics():
     return render_template("analytics.html", stats=stats, recent_patients=recent_patients)
  
  
-# ==========================================
-# 7. ROUTE /notes  (NOUVELLE)
-# ==========================================
+
 @app.route("/notes")
 def notes():
     if "user" not in session:
         return redirect("/")
  
-    # Crée la table si elle n'existe pas encore
+
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS doctor_notes (
             id           INT AUTO_INCREMENT PRIMARY KEY,
@@ -233,10 +219,7 @@ def notes_delete(note_id):
     flash("Note supprimée ✓", "info")
     return redirect("/notes")
  
- 
-# ==========================================
-# 8. ROUTE /logout
-# ==========================================
+
 @app.route("/logout")
 def logout():
     session.clear()
