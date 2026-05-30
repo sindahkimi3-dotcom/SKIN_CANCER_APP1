@@ -23,7 +23,7 @@
 | Backend | Python 3.8+, Flask 2.x |
 | IA / Deep Learning | TensorFlow 2.x, Keras, VGG16 |
 | Base de données | MySQL 8.0 (via XAMPP) |
-| Frontend | HTML5, CSS3, Bootstrap 5, Font Awesome 6 |
+| Frontend | HTML5, CSS3 |
 | Connecteur DB | mysql-connector-python |
 
 ---
