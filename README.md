@@ -1,7 +1,7 @@
  #  SkinDiag — Plateforme de Diagnostic Dermatologique par IA
 
 > Plateforme web médicale d'assistance au diagnostic dermatologique basée sur un modèle de deep learning **VGG16**, permettant aux médecins de classifier automatiquement des lésions cutanées en **bénignes ou malignes** à partir d'une simple image.
-https://github.com/sindahkimi3-dotcom/SKIN_CANCER_APP1/issues/1
+
 ---
 
 ##  Fonctionnalités
