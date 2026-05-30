@@ -68,7 +68,7 @@ skindiag/
 ### 1. Cloner le dépôt
 
 ```bash
-git clone https://github.com/VOTRE_USERNAME/skindiag.git
+git clone https://github.com/sindahkimi3-dotcom/skindiag.git
 cd skindiag
 ```
 
