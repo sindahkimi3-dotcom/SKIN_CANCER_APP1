@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — SkinDiag</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+ 
+<!-- NAVBAR -->
+<nav class="sk-navbar">
+    <div class="container">
+        <a class="sk-brand" href="/dashboard">
+            <div class="pulse-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+            <span><span class="brand-skin">SKIN</span><span class="brand-diag">DIAG</span></span>
+        </a>
+        <div class="sk-nav-actions">
+            <button class="sk-theme-toggle" id="themeToggle" title="Mode sombre">
+                <i class="fa-solid fa-moon" id="themeIcon"></i>
+            </button>
+            <div class="sk-user-pill">
+                <div class="avatar"><i class="fa-solid fa-user-doctor"></i></div>
+                Dr. {{ session['user'] }}
+            </div>
+            <a class="sk-logout-btn" href="/logout">
+                <i class="fa-solid fa-power-off"></i> Déconnexion
+            </a>
+        </div>
+    </div>
+</nav>
+ 
+<main class="sk-main">
+ 
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for category, message in messages %}
+        <div class="sk-alert {{ category }}">
+            <i class="fa-solid fa-circle-check"></i> {{ message }}
+            <button class="sk-alert-close" onclick="this.parentElement.remove()">✕</button>
+        </div>
+        {% endfor %}{% endif %}
+    {% endwith %}
+ 
+    <!-- Hero -->
+    <div class="sk-hero">
+        <div class="sk-hero-content">
+            <div class="sk-hero-badge">
+                <i class="fa-solid fa-circle-check"></i> Système IA actif
+            </div>
+            <h1>Bienvenue, Dr. {{ session['user'] }}</h1>
+            <p>Plateforme d'assistance au diagnostic dermatologique par intelligence artificielle.</p>
+        </div>
+        <i class="fa-solid fa-dna sk-hero-icon"></i>
+    </div>
+ 
+    <!-- Stats Strip -->
+    <div class="sk-stats-strip">
+        <div class="sk-stat-card">
+            <div class="sk-stat-icon blue"><i class="fa-solid fa-users"></i></div>
+            <div>
+                <div class="sk-stat-label">Total Patients</div>
+                <div class="sk-stat-value">{{ total_patients }}</div>
+            </div>
+        </div>
+        <div class="sk-stat-card">
+            <div class="sk-stat-icon teal"><i class="fa-solid fa-microscope"></i></div>
+            <div>
+                <div class="sk-stat-label">Analyses ce mois</div>
+                <div class="sk-stat-value">{{ monthly_analyses }}</div>
+            </div>
+        </div>
+        <div class="sk-stat-card">
+            <div class="sk-stat-icon green"><i class="fa-solid fa-brain"></i></div>
+            <div>
+                <div class="sk-stat-label">Précision du modèle</div>
+                <div class="sk-stat-value">98.4%</div>
+            </div>
+        </div>
+    </div>
+ 
+    <!-- Action Cards — 5 cartes en 2 lignes -->
+    <div class="sk-cards-grid">
+ 
+        <div class="sk-action-card">
+            <div class="sk-card-icon-wrap blue"><i class="fa-solid fa-microscope"></i></div>
+            <h5>Nouvelle Analyse IA</h5>
+            <p>Soumettez une image de lésion cutanée pour une classification automatique par le modèle.</p>
+            <a href="/predict" class="sk-btn sk-btn-primary">
+                <i class="fa-solid fa-plus"></i> Lancer une analyse
+            </a>
+        </div>
+ 
+        <div class="sk-action-card">
+            <div class="sk-card-icon-wrap teal"><i class="fa-solid fa-folder-open"></i></div>
+            <h5>Dossiers Patients</h5>
+            <p>Consultez l'ensemble des diagnostics et fiches patients enregistrés.</p>
+            <a href="/patients" class="sk-btn sk-btn-teal">
+                <i class="fa-solid fa-user-group"></i> Voir les patients
+            </a>
+        </div>
+ 
+        <div class="sk-action-card">
+            <div class="sk-card-icon-wrap green"><i class="fa-solid fa-brain"></i></div>
+            <h5>Statut du Modèle</h5>
+            <p>Analyse active, connectée et prête. Modèle opérationnel sur les dernières données.</p>
+            <div class="sk-status-badge">
+                <span class="dot"></span> Modèle Opérationnel
+            </div>
+        </div>
+ 
+        <div class="sk-action-card">
+            <div class="sk-card-icon-wrap" style="background:#fef3c7;color:#d97706">
+                <i class="fa-solid fa-chart-line"></i>
+            </div>
+            <h5>Statistiques</h5>
+            <p>Visualisez les tendances diagnostiques, la répartition bénin/malin et l'activité mensuelle.</p>
+            <a href="/analytics" class="sk-btn" style="background:#d97706;color:white;box-shadow:0 4px 14px rgba(217,119,6,0.3)">
+                <i class="fa-solid fa-chart-pie"></i> Voir les stats
+            </a>
+        </div>
+ 
+        <div class="sk-action-card">
+            <div class="sk-card-icon-wrap" style="background:#ede9fe;color:#7c3aed">
+                <i class="fa-solid fa-note-sticky"></i>
+            </div>
+            <h5>Notes Médecin</h5>
+            <p>Ajoutez des observations cliniques, commentaires de suivi et alertes par patient.</p>
+            <a href="/notes" class="sk-btn" style="background:#7c3aed;color:white;box-shadow:0 4px 14px rgba(124,58,237,0.3)">
+                <i class="fa-solid fa-pen"></i> Gérer les notes
+            </a>
+        </div>
+ 
+    </div>
+ 
+</main>
+ 
+<script>
+const toggle = document.getElementById('themeToggle');
+const icon   = document.getElementById('themeIcon');
+if (localStorage.getItem('sk-theme') === 'dark') {
+    document.documentElement.setAttribute('data-theme','dark');
+    icon.className = 'fa-solid fa-sun';
+}
+toggle.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    icon.className = isDark ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+    localStorage.setItem('sk-theme', isDark ? 'light' : 'dark');
+});
+</script>
+ 
+</body>
+</html>

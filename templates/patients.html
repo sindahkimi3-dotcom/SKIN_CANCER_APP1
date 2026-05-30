@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patients — SkinDiag</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+ 
+<!-- NAVBAR -->
+<nav class="sk-navbar">
+    <div class="container">
+        <a class="sk-brand" href="/dashboard">
+            <div class="pulse-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+            <span><span class="brand-skin">SKIN</span><span class="brand-diag">DIAG</span></span>
+        </a>
+        <div class="sk-nav-actions">
+            <div class="sk-user-pill">
+                <div class="avatar"><i class="fa-solid fa-user-doctor"></i></div>
+                Dr. {{ session['user'] }}
+            </div>
+            <a class="sk-logout-btn" href="/logout">
+                <i class="fa-solid fa-power-off"></i> Déconnexion
+            </a>
+        </div>
+    </div>
+</nav>
+ 
+<main class="sk-main">
+ 
+    <!-- Page Header -->
+    <div class="sk-page-header">
+        <div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+                <a href="/dashboard" style="color:var(--text-3);text-decoration:none;font-size:0.85rem">
+                    <i class="fa-solid fa-chevron-left"></i> Dashboard
+                </a>
+            </div>
+            <h2 class="sk-page-title">Dossiers Patients</h2>
+        </div>
+        <a href="/predict" class="sk-btn sk-btn-primary">
+            <i class="fa-solid fa-plus"></i> Nouvelle analyse
+        </a>
+    </div>
+ 
+    <!-- Table Card -->
+    <div class="sk-table-card">
+        <div class="sk-table-toolbar">
+            <div class="sk-search-input">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <span>Rechercher un patient…</span>
+            </div>
+            <span style="font-size:0.8rem;color:var(--text-3);margin-left:auto">
+                {{ patients|length }} patient(s) enregistré(s)
+            </span>
+        </div>
+ 
+        <div class="sk-table-wrap">
+            <table class="sk-table">
+                <thead>
+                    <tr>
+                        <th>Patient</th>
+                        <th>Âge</th>
+                        <th>Diagnostic</th>
+                        <th>Confiance</th>
+                        <th>Image</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in patients %}
+                    <tr>
+                        <td>
+                            <span class="sk-patient-avatar">{{ p.name[0]|upper }}</span>
+                            <span class="sk-patient-name">{{ p.name }}</span>
+                        </td>
+                        <td style="color:var(--text-2)">{{ p.age }} ans</td>
+                        <td>
+                            {% set r = p.result|lower %}
+                            {% if 'benign' in r or 'bénin' in r %}
+                                <span class="sk-result-badge benign"><i class="fa-solid fa-circle-check"></i> {{ p.result }}</span>
+                            {% elif 'malignant' in r or 'malin' in r %}
+                                <span class="sk-result-badge malignant"><i class="fa-solid fa-triangle-exclamation"></i> {{ p.result }}</span>
+                            {% else %}
+                                <span class="sk-result-badge default"><i class="fa-solid fa-circle-info"></i> {{ p.result }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="sk-prob-bar">
+                                <div class="sk-prob-track">
+                                    <div class="sk-prob-fill" style="width:{{ (p.probability * 100)|round(0) }}%"></div>
+                                </div>
+                                <span style="font-size:0.8rem;font-weight:600;color:var(--text-2);white-space:nowrap">
+                                    {{ (p.probability * 100)|round(1) }}%
+                                </span>
+                            </div>
+                        </td>
+                        <td>
+                            <img class="sk-thumb" src="{{ p.image_path }}" alt="Lésion">
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" style="text-align:center;padding:48px;color:var(--text-3)">
+                            <i class="fa-solid fa-folder-open" style="font-size:2rem;margin-bottom:10px;display:block;opacity:0.4"></i>
+                            Aucun patient enregistré pour le moment.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+ 
+</main>
+ 
+</body>
+</html>

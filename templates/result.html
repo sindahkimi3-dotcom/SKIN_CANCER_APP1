@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Résultat — SkinDiag</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+ 
+<!-- NAVBAR -->
+<nav class="sk-navbar">
+    <div class="container">
+        <a class="sk-brand" href="/dashboard">
+            <div class="pulse-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+            <span><span class="brand-skin">SKIN</span><span class="brand-diag">DIAG</span></span>
+        </a>
+        <div class="sk-nav-actions">
+            <div class="sk-user-pill">
+                <div class="avatar"><i class="fa-solid fa-user-doctor"></i></div>
+                Dr. {{ session['user'] }}
+            </div>
+            <a class="sk-logout-btn" href="/logout">
+                <i class="fa-solid fa-power-off"></i> Déconnexion
+            </a>
+        </div>
+    </div>
+</nav>
+ 
+<main class="sk-main">
+ 
+    <!-- Page Header -->
+    <div class="sk-page-header">
+        <div>
+            <div style="margin-bottom:4px">
+                <a href="/dashboard" style="color:var(--text-3);text-decoration:none;font-size:0.85rem">
+                    <i class="fa-solid fa-chevron-left"></i> Dashboard
+                </a>
+            </div>
+            <h2 class="sk-page-title">Résultat de l'analyse</h2>
+        </div>
+        <div style="display:flex;gap:10px">
+            <a href="/predict" class="sk-btn sk-btn-outline">
+                <i class="fa-solid fa-plus"></i> Nouvelle analyse
+            </a>
+            <a href="/patients" class="sk-btn sk-btn-primary">
+                <i class="fa-solid fa-folder-open"></i> Voir les dossiers
+            </a>
+        </div>
+    </div>
+ 
+    <div class="sk-result-layout">
+ 
+        <!-- Image Card -->
+        <div class="sk-result-image-card">
+            <div class="sk-result-image-header">
+                <i class="fa-solid fa-image" style="color:var(--primary);margin-right:8px"></i>
+                Image analysée
+            </div>
+            <img src="{{ img }}" alt="Lésion analysée">
+        </div>
+ 
+        <!-- Diagnostic Card -->
+        <div class="sk-result-diag-card">
+ 
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px">
+                <div style="width:40px;height:40px;background:var(--primary-light);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--primary)">
+                    <i class="fa-solid fa-brain"></i>
+                </div>
+                <div>
+                    <div style="font-size:0.75rem;color:var(--text-3);font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Analyse IA</div>
+                    <div style="font-size:0.9rem;font-weight:600;color:var(--text-1)">Résultat du modèle CNN</div>
+                </div>
+            </div>
+ 
+            <div class="sk-divider"></div>
+ 
+            <div style="margin:24px 0">
+                <div class="sk-diag-label">Diagnostic</div>
+                <div class="sk-diag-result">{{ result }}</div>
+ 
+                {% set r = result|lower %}
+                {% if 'benign' in r or 'bénin' in r %}
+                    <span class="sk-result-badge benign" style="font-size:0.85rem;padding:6px 16px">
+                        <i class="fa-solid fa-circle-check"></i> Lésion bénigne détectée
+                    </span>
+                {% elif 'malignant' in r or 'malin' in r %}
+                    <span class="sk-result-badge malignant" style="font-size:0.85rem;padding:6px 16px">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Lésion maligne détectée
+                    </span>
+                {% endif %}
+            </div>
+ 
+            <div class="sk-confidence-wrap">
+                <div class="sk-conf-header">
+                    <span class="sk-conf-label">Score de confiance</span>
+                    <span class="sk-conf-value">{{ prob }} %</span>
+                </div>
+                <div class="sk-conf-track">
+                    <div class="sk-conf-fill" id="confBar" style="width: 0%"></div>
+                </div>
+            </div>
+ 
+            <div class="sk-divider"></div>
+ 
+            <!-- Quick stats -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px">
+                <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;text-align:center">
+                    <div style="font-size:0.75rem;color:var(--text-3);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px">Modèle</div>
+                    <div style="font-size:0.85rem;font-weight:700;color:var(--text-1)">CNN ResNet</div>
+                </div>
+                <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;text-align:center">
+                    <div style="font-size:0.75rem;color:var(--text-3);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px">Statut</div>
+                    <div style="font-size:0.85rem;font-weight:700;color:var(--success)">Enregistré ✓</div>
+                </div>
+            </div>
+ 
+            <div class="sk-disclaimer">
+                <i class="fa-solid fa-circle-info" style="flex-shrink:0;margin-top:1px"></i>
+                <span>Ce résultat est fourni à titre d'aide au diagnostic et ne remplace pas l'avis d'un dermatologue qualifié.</span>
+            </div>
+ 
+        </div>
+ 
+    </div>
+ 
+</main>
+ 
+<script>
+// Animate confidence bar on load
+window.addEventListener('load', () => {
+    const bar = document.getElementById('confBar');
+    const prob = parseFloat('{{ prob }}') || 0;
+    setTimeout(() => { bar.style.width = prob + '%'; }, 200);
+});
+</script>
+ 
+</body>
+</html>
+ 

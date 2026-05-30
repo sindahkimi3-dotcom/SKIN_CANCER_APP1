@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes Médecin — SkinDiag</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+ 
+<!-- NAVBAR -->
+<nav class="sk-navbar">
+    <div class="container">
+        <a class="sk-brand" href="/dashboard">
+            <div class="pulse-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+            <span><span class="brand-skin">SKIN</span><span class="brand-diag">DIAG</span></span>
+        </a>
+        <div class="sk-nav-actions">
+            <button class="sk-theme-toggle" id="themeToggle" title="Mode sombre">
+                <i class="fa-solid fa-moon" id="themeIcon"></i>
+            </button>
+            <div class="sk-user-pill">
+                <div class="avatar"><i class="fa-solid fa-user-doctor"></i></div>
+                Dr. {{ session['user'] }}
+            </div>
+            <a class="sk-logout-btn" href="/logout">
+                <i class="fa-solid fa-power-off"></i> Déconnexion
+            </a>
+        </div>
+    </div>
+</nav>
+ 
+<main class="sk-main">
+ 
+    <!-- Header -->
+    <div class="sk-page-header">
+        <div>
+            <div style="margin-bottom:4px">
+                <a href="/dashboard" style="color:var(--text-3);text-decoration:none;font-size:0.85rem">
+                    <i class="fa-solid fa-chevron-left"></i> Dashboard
+                </a>
+            </div>
+            <h2 class="sk-page-title">Notes & Commentaires Médecin</h2>
+        </div>
+    </div>
+ 
+    <!-- Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for cat, msg in messages %}
+        <div class="sk-alert {{ cat }}">
+            <i class="fa-solid fa-circle-check"></i> {{ msg }}
+            <button class="sk-alert-close" onclick="this.parentElement.remove()">✕</button>
+        </div>
+        {% endfor %}
+    {% endwith %}
+ 
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start">
+ 
+        <!-- Notes List -->
+        <div class="sk-notes-card">
+            <div class="sk-notes-header">
+                <div class="sk-notes-title">
+                    <i class="fa-solid fa-note-sticky"></i>
+                    Toutes les notes
+                    <span style="font-size:0.78rem;font-weight:500;color:var(--text-3);margin-left:4px">
+                        ({{ notes|length }} note(s))
+                    </span>
+                </div>
+                <!-- Search -->
+                <div style="display:flex;align-items:center;gap:8px;background:var(--surface-2);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:6px 12px;font-size:0.82rem;color:var(--text-3)">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="noteSearch" placeholder="Rechercher…"
+                        style="border:none;background:transparent;outline:none;font-size:0.82rem;color:var(--text-1);width:140px"
+                        oninput="filterNotes(this.value)">
+                </div>
+            </div>
+ 
+            <!-- Filter tabs -->
+            <div style="display:flex;gap:6px;padding:12px 24px;border-bottom:1px solid var(--border);flex-wrap:wrap">
+                <button class="sk-filter-btn active" onclick="filterTag('all', this)">Tout</button>
+                <button class="sk-filter-btn" onclick="filterTag('urgent', this)">🔴 Urgent</button>
+                <button class="sk-filter-btn" onclick="filterTag('followup', this)">🟡 Suivi</button>
+                <button class="sk-filter-btn" onclick="filterTag('info', this)">🔵 Info</button>
+                <button class="sk-filter-btn" onclick="filterTag('ok', this)">🟢 OK</button>
+            </div>
+ 
+            <div class="sk-notes-list" id="notesList">
+                {% for note in notes %}
+                <div class="sk-note-item" data-tag="{{ note.tag }}" data-search="{{ note.patient_name|lower }} {{ note.text|lower }}">
+                    <div class="sk-note-meta">
+                        <span class="sk-note-author">Dr. {{ note.author }}</span>
+                        <span class="sk-note-patient">
+                            <i class="fa-solid fa-user" style="font-size:0.65rem"></i>
+                            {{ note.patient_name }}
+                        </span>
+                        <span class="sk-note-tag {{ note.tag }}">
+                            {% if note.tag == 'urgent' %}🔴 Urgent
+                            {% elif note.tag == 'followup' %}🟡 Suivi
+                            {% elif note.tag == 'ok' %}🟢 OK
+                            {% else %}🔵 Info{% endif %}
+                        </span>
+                        <span class="sk-note-date">{{ note.created_at or 'Aujourd\'hui' }}</span>
+                    </div>
+                    <div class="sk-note-text">{{ note.text }}</div>
+                </div>
+                {% else %}
+                <div style="text-align:center;padding:48px 20px;color:var(--text-3)" id="emptyNotes">
+                    <i class="fa-solid fa-note-sticky" style="font-size:2rem;margin-bottom:12px;display:block;opacity:0.3"></i>
+                    Aucune note pour le moment.<br>
+                    <span style="font-size:0.8rem">Utilisez le formulaire ci-contre pour en ajouter.</span>
+                </div>
+                {% endfor %}
+            </div>
+ 
+            <!-- Add note form -->
+            <div class="sk-note-form">
+                <div style="font-size:0.82rem;font-weight:700;color:var(--text-2);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px">
+                    <i class="fa-solid fa-plus" style="color:var(--primary);margin-right:4px"></i>
+                    Ajouter une note
+                </div>
+                <form action="/notes/add" method="POST">
+                    <div class="sk-note-form-row">
+                        <input class="sk-input" type="text" name="patient_name"
+                            placeholder="Nom du patient" required>
+                        <select class="sk-note-select" name="tag">
+                            <option value="info">🔵 Info</option>
+                            <option value="followup">🟡 Suivi</option>
+                            <option value="urgent">🔴 Urgent</option>
+                            <option value="ok">🟢 OK</option>
+                        </select>
+                    </div>
+                    <textarea class="sk-note-textarea" name="text"
+                        placeholder="Observations cliniques, recommandations, suivi…" required></textarea>
+                    <div class="sk-note-form-actions">
+                        <button type="submit" class="sk-btn sk-btn-primary" style="font-size:0.85rem;padding:9px 20px">
+                            <i class="fa-solid fa-floppy-disk"></i> Enregistrer
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+ 
+        <!-- Side stats panel -->
+        <div style="display:flex;flex-direction:column;gap:16px">
+ 
+            <!-- Note count by tag -->
+            <div class="sk-analytics-card" style="padding:20px">
+                <div class="sk-card-title" style="margin-bottom:16px">
+                    <i class="fa-solid fa-chart-bar"></i> Répartition des notes
+                </div>
+                <div class="sk-bar-chart">
+                    {% set tag_counts = {'urgent': 0, 'followup': 0, 'info': 0, 'ok': 0} %}
+                    {% for note in notes %}
+                        {% if note.tag in tag_counts %}
+                            {% set _ = tag_counts.update({note.tag: tag_counts[note.tag]+1}) %}
+                        {% endif %}
+                    {% endfor %}
+                    {% set total_n = notes|length or 1 %}
+                    <div class="sk-bar-row">
+                        <span class="sk-bar-label" style="color:var(--danger);width:50px">Urgent</span>
+                        <div class="sk-bar-track">
+                            <div class="sk-bar-fill" style="width:{{ (tag_counts.urgent/total_n*100)|int }}%;background:#e53e3e"></div>
+                        </div>
+                        <span class="sk-bar-val">{{ tag_counts.urgent }}</span>
+                    </div>
+                    <div class="sk-bar-row">
+                        <span class="sk-bar-label" style="color:var(--warning);width:50px">Suivi</span>
+                        <div class="sk-bar-track">
+                            <div class="sk-bar-fill" style="width:{{ (tag_counts.followup/total_n*100)|int }}%;background:#f59e0b"></div>
+                        </div>
+                        <span class="sk-bar-val">{{ tag_counts.followup }}</span>
+                    </div>
+                    <div class="sk-bar-row">
+                        <span class="sk-bar-label" style="color:var(--primary);width:50px">Info</span>
+                        <div class="sk-bar-track">
+                            <div class="sk-bar-fill" style="width:{{ (tag_counts.info/total_n*100)|int }}%;background:#0a6cff"></div>
+                        </div>
+                        <span class="sk-bar-val">{{ tag_counts.info }}</span>
+                    </div>
+                    <div class="sk-bar-row">
+                        <span class="sk-bar-label" style="color:var(--success);width:50px">OK</span>
+                        <div class="sk-bar-track">
+                            <div class="sk-bar-fill" style="width:{{ (tag_counts.ok/total_n*100)|int }}%;background:#22c55e"></div>
+                        </div>
+                        <span class="sk-bar-val">{{ tag_counts.ok }}</span>
+                    </div>
+                </div>
+            </div>
+ 
+            <!-- Urgent alert box -->
+            {% for note in notes if note.tag == 'urgent' %}
+            {% if loop.first %}
+            <div style="background:var(--danger-light);border:1px solid #fecaca;border-radius:var(--radius-md);padding:16px">
+                <div style="font-size:0.82rem;font-weight:700;color:var(--danger);margin-bottom:10px;display:flex;align-items:center;gap:6px">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Notes urgentes
+                </div>
+                {% for un in notes if un.tag == 'urgent' %}
+                <div style="font-size:0.82rem;color:var(--text-2);margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #fecaca">
+                    <strong>{{ un.patient_name }}</strong> — {{ un.text[:60] }}{% if un.text|length > 60 %}…{% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endfor %}
+ 
+            <!-- Quick tip -->
+            <div style="background:var(--primary-light);border:1px solid #bfdbfe;border-radius:var(--radius-md);padding:16px">
+                <div style="font-size:0.82rem;font-weight:700;color:var(--primary);margin-bottom:6px;display:flex;align-items:center;gap:6px">
+                    <i class="fa-solid fa-lightbulb"></i> Conseil
+                </div>
+                <p style="font-size:0.8rem;color:var(--text-2);line-height:1.6">
+                    Utilisez le tag <strong>Urgent</strong> pour les cas nécessitant une attention immédiate. Ils apparaîtront dans le panneau de priorité.
+                </p>
+            </div>
+ 
+        </div>
+ 
+    </div>
+ 
+</main>
+ 
+<style>
+.sk-filter-btn {
+    background: var(--surface-2);
+    border: 1.5px solid var(--border);
+    border-radius: 100px;
+    padding: 5px 14px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-2);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--font-body);
+}
+.sk-filter-btn:hover, .sk-filter-btn.active {
+    background: var(--primary-light);
+    border-color: var(--primary);
+    color: var(--primary);
+}
+</style>
+ 
+<script>
+/* Dark mode */
+const toggle = document.getElementById('themeToggle');
+const icon   = document.getElementById('themeIcon');
+if (localStorage.getItem('sk-theme') === 'dark') {
+    document.documentElement.setAttribute('data-theme','dark');
+    icon.className = 'fa-solid fa-sun';
+}
+toggle.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    icon.className = isDark ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+    localStorage.setItem('sk-theme', isDark ? 'light' : 'dark');
+});
+ 
+/* Filter by tag */
+function filterTag(tag, btn) {
+    document.querySelectorAll('.sk-filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.sk-note-item').forEach(item => {
+        item.style.display = (tag === 'all' || item.dataset.tag === tag) ? '' : 'none';
+    });
+}
+ 
+/* Search filter */
+function filterNotes(q) {
+    const lower = q.toLowerCase();
+    document.querySelectorAll('.sk-note-item').forEach(item => {
+        item.style.display = item.dataset.search.includes(lower) ? '' : 'none';
+    });
+}
+</script>
+ 
+</body>
+</html>

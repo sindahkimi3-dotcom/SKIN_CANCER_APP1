@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistiques — SkinDiag</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+ 
+<!-- NAVBAR -->
+<nav class="sk-navbar">
+    <div class="container">
+        <a class="sk-brand" href="/dashboard">
+            <div class="pulse-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+            <span><span class="brand-skin">SKIN</span><span class="brand-diag">DIAG</span></span>
+        </a>
+        <div class="sk-nav-actions">
+            <button class="sk-theme-toggle" id="themeToggle" title="Mode sombre">
+                <i class="fa-solid fa-moon" id="themeIcon"></i>
+            </button>
+            <div class="sk-user-pill">
+                <div class="avatar"><i class="fa-solid fa-user-doctor"></i></div>
+                Dr. {{ session['user'] }}
+            </div>
+            <a class="sk-logout-btn" href="/logout">
+                <i class="fa-solid fa-power-off"></i> Déconnexion
+            </a>
+        </div>
+    </div>
+</nav>
+ 
+<main class="sk-main">
+ 
+    <!-- Header -->
+    <div class="sk-page-header">
+        <div>
+            <div style="margin-bottom:4px">
+                <a href="/dashboard" style="color:var(--text-3);text-decoration:none;font-size:0.85rem">
+                    <i class="fa-solid fa-chevron-left"></i> Dashboard
+                </a>
+            </div>
+            <h2 class="sk-page-title">Statistiques & Analytiques</h2>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center">
+            <select class="sk-note-select" id="periodSelect" onchange="updateCharts()">
+                <option value="7">7 derniers jours</option>
+                <option value="30" selected>30 derniers jours</option>
+                <option value="90">3 derniers mois</option>
+            </select>
+        </div>
+    </div>
+ 
+    <!-- KPI Strip -->
+    <div class="sk-stats-strip" style="margin-bottom:24px">
+        <div class="sk-stat-card">
+            <div class="sk-stat-icon blue"><i class="fa-solid fa-users"></i></div>
+            <div>
+                <div class="sk-stat-label">Total Patients</div>
+                <div class="sk-stat-value" id="kpiPatients">{{ stats.total_patients or 0 }}</div>
+            </div>
+        </div>
+        <div class="sk-stat-card">
+            <div class="sk-stat-icon teal"><i class="fa-solid fa-microscope"></i></div>
+            <div>
+                <div class="sk-stat-label">Analyses ce mois</div>
+                <div class="sk-stat-value" id="kpiAnalyses">{{ stats.monthly_analyses or 0 }}</div>
+            </div>
+        </div>
+        <div class="sk-stat-card">
+            <div class="sk-stat-icon green"><i class="fa-solid fa-shield-halved"></i></div>
+            <div>
+                <div class="sk-stat-label">Confiance moyenne</div>
+                <div class="sk-stat-value" id="kpiConf">{{ stats.avg_confidence or '—' }}%</div>
+            </div>
+        </div>
+    </div>
+ 
+    <!-- Charts Grid -->
+    <div class="sk-analytics-grid">
+ 
+        <!-- Donut — Répartition diagnostics -->
+        <div class="sk-analytics-card">
+            <div class="sk-card-header">
+                <div class="sk-card-title">
+                    <i class="fa-solid fa-chart-pie"></i> Répartition des diagnostics
+                </div>
+                <span class="sk-card-badge" id="totalDiag">Total : {{ stats.total_patients or 0 }}</span>
+            </div>
+            <div class="sk-donut-wrap">
+                <div class="sk-donut" style="width:140px;height:140px">
+                    <svg viewBox="0 0 120 120" width="140" height="140">
+                        <!-- Benign arc -->
+                        <circle cx="60" cy="60" r="48" fill="none" stroke="var(--border)" stroke-width="14"/>
+                        <circle cx="60" cy="60" r="48" fill="none" stroke="#22c55e" stroke-width="14"
+                            stroke-dasharray="181 120" stroke-dashoffset="0" stroke-linecap="round"
+                            id="donutBenign"/>
+                        <!-- Malignant arc -->
+                        <circle cx="60" cy="60" r="48" fill="none" stroke="#e53e3e" stroke-width="14"
+                            stroke-dasharray="60 241" stroke-dashoffset="-181" stroke-linecap="round"
+                            id="donutMalignant"/>
+                        <!-- Unknown arc -->
+                        <circle cx="60" cy="60" r="48" fill="none" stroke="#f59e0b" stroke-width="14"
+                            stroke-dasharray="60 241" stroke-dashoffset="-241" stroke-linecap="round"
+                            id="donutUnknown"/>
+                    </svg>
+                    <div class="sk-donut-label">
+                        <span class="val" id="donutPct">75%</span>
+                        <span class="lbl">Bénins</span>
+                    </div>
+                </div>
+                <div class="sk-donut-legend">
+                    <div class="sk-legend-item">
+                        <div class="sk-legend-dot" style="background:#22c55e"></div>
+                        <span class="name">Bénin</span>
+                        <span class="count" id="legendBenign">{{ stats.benign or 0 }}</span>
+                    </div>
+                    <div class="sk-legend-item">
+                        <div class="sk-legend-dot" style="background:#e53e3e"></div>
+                        <span class="name">Malin</span>
+                        <span class="count" id="legendMalignant">{{ stats.malignant or 0 }}</span>
+                    </div>
+                    <div class="sk-legend-item">
+                        <div class="sk-legend-dot" style="background:#f59e0b"></div>
+                        <span class="name">Indéterminé</span>
+                        <span class="count" id="legendUnknown">{{ stats.unknown or 0 }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+ 
+        <!-- Analyses par semaine — Sparkline -->
+        <div class="sk-analytics-card">
+            <div class="sk-card-header">
+                <div class="sk-card-title">
+                    <i class="fa-solid fa-chart-line"></i> Activité des analyses
+                </div>
+                <span class="sk-card-badge">↑ Tendance</span>
+            </div>
+            <div class="sk-sparkline-wrap">
+                <svg id="sparklineSvg" viewBox="0 0 300 80" preserveAspectRatio="none">
+                    <defs>
+                        <linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#0a6cff" stop-opacity="0.3"/>
+                            <stop offset="100%" stop-color="#0a6cff" stop-opacity="0"/>
+                        </linearGradient>
+                    </defs>
+                    <path id="sparkArea" fill="url(#sparkGrad)"/>
+                    <path id="sparkLine" fill="none" stroke="#0a6cff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <div class="sk-trend-badges">
+                    <div class="sk-trend-item">
+                        <span class="t-label">Cette semaine</span>
+                        <span class="t-val" id="trendWeek">—</span>
+                        <span class="t-delta up" id="trendDelta">—</span>
+                    </div>
+                    <div class="sk-trend-item">
+                        <span class="t-label">Ce mois</span>
+                        <span class="t-val" id="trendMonth">{{ stats.monthly_analyses or 0 }}</span>
+                        <span class="t-delta up">analyses</span>
+                    </div>
+                    <div class="sk-trend-item">
+                        <span class="t-label">Pic journalier</span>
+                        <span class="t-val" id="trendPeak">—</span>
+                        <span class="t-delta" style="color:var(--text-3)">max/jour</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+ 
+        <!-- Confiance par tranche d'âge — Bar chart -->
+        <div class="sk-analytics-card">
+            <div class="sk-card-header">
+                <div class="sk-card-title">
+                    <i class="fa-solid fa-chart-bar"></i> Analyses par tranche d'âge
+                </div>
+            </div>
+            <div class="sk-bar-chart" id="ageBarChart">
+                <div class="sk-bar-row">
+                    <span class="sk-bar-label">0-20</span>
+                    <div class="sk-bar-track"><div class="sk-bar-fill" style="width:18%"></div></div>
+                    <span class="sk-bar-val">18%</span>
+                </div>
+                <div class="sk-bar-row">
+                    <span class="sk-bar-label">21-40</span>
+                    <div class="sk-bar-track"><div class="sk-bar-fill" style="width:35%"></div></div>
+                    <span class="sk-bar-val">35%</span>
+                </div>
+                <div class="sk-bar-row">
+                    <span class="sk-bar-label">41-60</span>
+                    <div class="sk-bar-track"><div class="sk-bar-fill" style="width:72%"></div></div>
+                    <span class="sk-bar-val">72%</span>
+                </div>
+                <div class="sk-bar-row">
+                    <span class="sk-bar-label">61-80</span>
+                    <div class="sk-bar-track"><div class="sk-bar-fill" style="width:55%"></div></div>
+                    <span class="sk-bar-val">55%</span>
+                </div>
+                <div class="sk-bar-row">
+                    <span class="sk-bar-label">80+</span>
+                    <div class="sk-bar-track"><div class="sk-bar-fill" style="width:22%"></div></div>
+                    <span class="sk-bar-val">22%</span>
+                </div>
+            </div>
+        </div>
+ 
+        <!-- Activité récente -->
+        <div class="sk-analytics-card">
+            <div class="sk-card-header">
+                <div class="sk-card-title">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Activité récente
+                </div>
+                <a href="/patients" style="font-size:0.8rem;color:var(--primary);text-decoration:none;font-weight:600">
+                    Voir tout →
+                </a>
+            </div>
+            <div class="sk-activity-list">
+                {% for p in recent_patients %}
+                <div class="sk-activity-item">
+                    {% if 'malin' in p.result|lower or 'malignant' in p.result|lower %}
+                    <div class="sk-activity-dot malignant"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                    {% else %}
+                    <div class="sk-activity-dot benign"><i class="fa-solid fa-circle-check"></i></div>
+                    {% endif %}
+                    <div class="sk-activity-info">
+                        <div class="name">{{ p.name }}</div>
+                        <div class="detail">{{ p.result }} — {{ (p.probability*100)|round(1) }}% confiance</div>
+                    </div>
+                    <span class="sk-activity-time">{{ p.created_at or 'Récent' }}</span>
+                </div>
+                {% else %}
+                <div style="text-align:center;padding:32px;color:var(--text-3);font-size:0.875rem">
+                    <i class="fa-solid fa-inbox" style="display:block;font-size:1.8rem;margin-bottom:10px;opacity:0.4"></i>
+                    Aucune activité récente
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+ 
+    </div>
+ 
+</main>
+ 
+<script>
+/* ---- Dark Mode ---- */
+const toggle = document.getElementById('themeToggle');
+const icon   = document.getElementById('themeIcon');
+const saved  = localStorage.getItem('sk-theme');
+if (saved === 'dark') { document.documentElement.setAttribute('data-theme','dark'); icon.className='fa-solid fa-sun'; }
+toggle.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    icon.className = isDark ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+    localStorage.setItem('sk-theme', isDark ? 'light' : 'dark');
+    drawSparkline(getSparkData());
+});
+ 
+/* ---- Sparkline ---- */
+function getSparkData() {
+    const period = parseInt(document.getElementById('periodSelect').value);
+    const data = [];
+    for (let i = 0; i < period; i++) {
+        data.push(Math.floor(Math.random() * 8) + 1);
+    }
+    return data;
+}
+ 
+function drawSparkline(data) {
+    const svg = document.getElementById('sparklineSvg');
+    const W = 300, H = 72, PAD = 6;
+    const max = Math.max(...data);
+    const pts = data.map((v,i) => {
+        const x = PAD + (i / (data.length-1)) * (W - PAD*2);
+        const y = PAD + (1 - v/max) * (H - PAD*2);
+        return [x, y];
+    });
+    const linePath = 'M ' + pts.map(p => p.join(',')).join(' L ');
+    const areaPath = linePath + ` L ${pts[pts.length-1][0]},${H} L ${pts[0][0]},${H} Z`;
+    document.getElementById('sparkLine').setAttribute('d', linePath);
+    document.getElementById('sparkArea').setAttribute('d', areaPath);
+ 
+    const week = data.slice(-7).reduce((a,b)=>a+b,0);
+    const prev = data.slice(-14,-7).reduce((a,b)=>a+b,0) || 1;
+    const delta = Math.round(((week-prev)/prev)*100);
+    document.getElementById('trendWeek').textContent = week;
+    document.getElementById('trendDelta').textContent = (delta>=0?'↑ +':'↓ ')+delta+'%';
+    document.getElementById('trendDelta').className = 't-delta '+(delta>=0?'up':'down');
+    document.getElementById('trendPeak').textContent = max;
+}
+ 
+function updateCharts() { drawSparkline(getSparkData()); }
+ 
+/* init */
+drawSparkline(getSparkData());
+ 
+/* persist theme on load */
+if (localStorage.getItem('sk-theme') === 'dark') {
+    document.documentElement.setAttribute('data-theme','dark');
+}
+</script>
+ 
+</body>
+</html>
+ 

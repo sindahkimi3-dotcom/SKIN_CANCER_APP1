@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nouvelle Analyse — SkinDiag</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+ 
+<!-- NAVBAR -->
+<nav class="sk-navbar">
+    <div class="container">
+        <a class="sk-brand" href="/dashboard">
+            <div class="pulse-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+            <span><span class="brand-skin">SKIN</span><span class="brand-diag">DIAG</span></span>
+        </a>
+        <div class="sk-nav-actions">
+            <div class="sk-user-pill">
+                <div class="avatar"><i class="fa-solid fa-user-doctor"></i></div>
+                Dr. {{ session['user'] }}
+            </div>
+            <a class="sk-logout-btn" href="/logout">
+                <i class="fa-solid fa-power-off"></i> Déconnexion
+            </a>
+        </div>
+    </div>
+</nav>
+ 
+<main class="sk-main">
+ 
+    <!-- Page Header -->
+    <div class="sk-page-header">
+        <div>
+            <div style="margin-bottom:4px">
+                <a href="/dashboard" style="color:var(--text-3);text-decoration:none;font-size:0.85rem">
+                    <i class="fa-solid fa-chevron-left"></i> Dashboard
+                </a>
+            </div>
+            <h2 class="sk-page-title">Nouvelle Analyse IA</h2>
+        </div>
+    </div>
+ 
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for cat, msg in messages %}
+        <div class="sk-alert {{ cat }}">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            {{ msg }}
+            <button class="sk-alert-close" onclick="this.parentElement.remove()">✕</button>
+        </div>
+        {% endfor %}
+    {% endwith %}
+ 
+    <div class="sk-predict-layout">
+ 
+        <!-- Form Card -->
+        <div class="sk-form-card">
+            <h4>Informations du patient</h4>
+            <p class="card-desc">Renseignez les données cliniques et soumettez l'image pour analyse.</p>
+ 
+            <form method="POST" enctype="multipart/form-data">
+ 
+                <div class="sk-form-group">
+                    <label>Nom complet</label>
+                    <div class="sk-input-icon-wrap">
+                        <i class="fa-solid fa-user sk-icon"></i>
+                        <input class="sk-input" type="text" name="name" placeholder="Prénom Nom" required>
+                    </div>
+                </div>
+ 
+                <div class="sk-form-group">
+                    <label>Âge</label>
+                    <div class="sk-input-icon-wrap">
+                        <i class="fa-solid fa-calendar sk-icon"></i>
+                        <input class="sk-input" type="number" name="age" placeholder="Âge en années" min="1" max="120" required>
+                    </div>
+                </div>
+ 
+                <div class="sk-divider"></div>
+ 
+                <div class="sk-form-group">
+                    <label>Image de la lésion cutanée</label>
+                    <div class="sk-upload-zone" id="uploadZone">
+                        <input type="file" name="image" accept="image/*" required id="fileInput">
+                        <div class="sk-upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                        <h6 id="uploadText">Glisser-déposer ou cliquer pour sélectionner</h6>
+                        <span>JPG, PNG, JPEG — Max 10 Mo</span>
+                    </div>
+                    <!-- Image preview -->
+                    <img id="previewImg" style="display:none;width:100%;border-radius:var(--radius-md);margin-top:12px;max-height:200px;object-fit:cover;border:1.5px solid var(--border)">
+                </div>
+ 
+                <button type="submit" class="sk-btn sk-btn-primary" style="width:100%;justify-content:center;padding:13px;font-size:0.95rem;border-radius:var(--radius-sm)">
+                    <i class="fa-solid fa-brain"></i> Lancer l'analyse IA
+                </button>
+ 
+            </form>
+        </div>
+ 
+        <!-- Info Panel -->
+        <div class="sk-info-panel">
+            <h4><i class="fa-solid fa-circle-info" style="color:var(--primary);margin-right:8px"></i>Comment ça fonctionne</h4>
+ 
+            <div class="sk-info-step">
+                <div class="sk-step-num">1</div>
+                <div class="sk-step-text">
+                    <strong>Saisissez les données patient</strong>
+                    <span>Nom et âge pour constituer le dossier médical.</span>
+                </div>
+            </div>
+ 
+            <div class="sk-info-step">
+                <div class="sk-step-num">2</div>
+                <div class="sk-step-text">
+                    <strong>Importez l'image dermoscopique</strong>
+                    <span>Prenez une photo nette de la lésion en bonne lumière.</span>
+                </div>
+            </div>
+ 
+            <div class="sk-info-step">
+                <div class="sk-step-num">3</div>
+                <div class="sk-step-text">
+                    <strong>Analyse par le modèle CNN</strong>
+                    <span>L'IA analyse l'image et retourne un diagnostic en quelques secondes.</span>
+                </div>
+            </div>
+ 
+            <div class="sk-info-step">
+                <div class="sk-step-num">4</div>
+                <div class="sk-step-text">
+                    <strong>Résultat et score de confiance</strong>
+                    <span>Diagnostic (bénin/malin) avec pourcentage de certitude du modèle.</span>
+                </div>
+            </div>
+ 
+            <div class="sk-divider"></div>
+ 
+            <div style="background:var(--primary-light);border-radius:var(--radius-sm);padding:16px;display:flex;gap:10px;align-items:flex-start">
+                <i class="fa-solid fa-shield-halved" style="color:var(--primary);margin-top:2px;flex-shrink:0"></i>
+                <div>
+                    <div style="font-size:0.85rem;font-weight:600;color:var(--primary);margin-bottom:3px">Données sécurisées</div>
+                    <div style="font-size:0.8rem;color:var(--text-2)">Les images et données patients sont stockées localement dans votre base MySQL.</div>
+                </div>
+            </div>
+        </div>
+ 
+    </div>
+ 
+</main>
+ 
+<script>
+const fileInput = document.getElementById('fileInput');
+const previewImg = document.getElementById('previewImg');
+const uploadText = document.getElementById('uploadText');
+const uploadZone = document.getElementById('uploadZone');
+ 
+fileInput.addEventListener('change', function() {
+    const file = this.files[0];
+    if (file) {
+        uploadText.textContent = file.name;
+        const reader = new FileReader();
+        reader.onload = e => {
+            previewImg.src = e.target.result;
+            previewImg.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+});
+ 
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop', e => {
+    e.preventDefault();
+    uploadZone.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file) {
+        fileInput.files = e.dataTransfer.files;
+        fileInput.dispatchEvent(new Event('change'));
+    }
+});
+</script>
+ 
+</body>
+</html>
+ 
