@@ -11,7 +11,7 @@
 </head>
 <body>
  
-<!-- NAVBAR -->
+
 <nav class="sk-navbar">
     <div class="container">
         <a class="sk-brand" href="/dashboard">
@@ -35,7 +35,7 @@
  
 <main class="sk-main">
  
-    <!-- Header -->
+ 
     <div class="sk-page-header">
         <div>
             <div style="margin-bottom:4px">
@@ -54,7 +54,7 @@
         </div>
     </div>
  
-    <!-- KPI Strip -->
+  
     <div class="sk-stats-strip" style="margin-bottom:24px">
         <div class="sk-stat-card">
             <div class="sk-stat-icon blue"><i class="fa-solid fa-users"></i></div>
@@ -79,10 +79,10 @@
         </div>
     </div>
  
-    <!-- Charts Grid -->
+  
     <div class="sk-analytics-grid">
  
-        <!-- Donut — Répartition diagnostics -->
+        
         <div class="sk-analytics-card">
             <div class="sk-card-header">
                 <div class="sk-card-title">
@@ -93,16 +93,16 @@
             <div class="sk-donut-wrap">
                 <div class="sk-donut" style="width:140px;height:140px">
                     <svg viewBox="0 0 120 120" width="140" height="140">
-                        <!-- Benign arc -->
+                      
                         <circle cx="60" cy="60" r="48" fill="none" stroke="var(--border)" stroke-width="14"/>
                         <circle cx="60" cy="60" r="48" fill="none" stroke="#22c55e" stroke-width="14"
                             stroke-dasharray="181 120" stroke-dashoffset="0" stroke-linecap="round"
                             id="donutBenign"/>
-                        <!-- Malignant arc -->
+                     
                         <circle cx="60" cy="60" r="48" fill="none" stroke="#e53e3e" stroke-width="14"
                             stroke-dasharray="60 241" stroke-dashoffset="-181" stroke-linecap="round"
                             id="donutMalignant"/>
-                        <!-- Unknown arc -->
+                     
                         <circle cx="60" cy="60" r="48" fill="none" stroke="#f59e0b" stroke-width="14"
                             stroke-dasharray="60 241" stroke-dashoffset="-241" stroke-linecap="round"
                             id="donutUnknown"/>
@@ -132,7 +132,7 @@
             </div>
         </div>
  
-        <!-- Analyses par semaine — Sparkline -->
+     
         <div class="sk-analytics-card">
             <div class="sk-card-header">
                 <div class="sk-card-title">
@@ -171,7 +171,6 @@
             </div>
         </div>
  
-        <!-- Confiance par tranche d'âge — Bar chart -->
         <div class="sk-analytics-card">
             <div class="sk-card-header">
                 <div class="sk-card-title">
@@ -207,7 +206,7 @@
             </div>
         </div>
  
-        <!-- Activité récente -->
+     
         <div class="sk-analytics-card">
             <div class="sk-card-header">
                 <div class="sk-card-title">
@@ -245,7 +244,7 @@
 </main>
  
 <script>
-/* ---- Dark Mode ---- */
+
 const toggle = document.getElementById('themeToggle');
 const icon   = document.getElementById('themeIcon');
 const saved  = localStorage.getItem('sk-theme');
@@ -258,7 +257,7 @@ toggle.addEventListener('click', () => {
     drawSparkline(getSparkData());
 });
  
-/* ---- Sparkline ---- */
+
 function getSparkData() {
     const period = parseInt(document.getElementById('periodSelect').value);
     const data = [];
@@ -293,10 +292,10 @@ function drawSparkline(data) {
  
 function updateCharts() { drawSparkline(getSparkData()); }
  
-/* init */
+
 drawSparkline(getSparkData());
  
-/* persist theme on load */
+
 if (localStorage.getItem('sk-theme') === 'dark') {
     document.documentElement.setAttribute('data-theme','dark');
 }
